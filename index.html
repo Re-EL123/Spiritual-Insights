@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Spiritual Insights</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #f3e5f5, #ede7f6);
+      color: #4a148c;
+      padding: 20px;
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background: #7b1fa2;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(123, 31, 162, 0.3);
+    }
+
+    .result {
+      margin-top: 20px;
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 15px;
+      font-size: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .result strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Spiritual Insights</h1>
+    <p>Enter your date of birth to receive your Life Path Number, Birth Chart summary, and today's Angel Number message.</p>
+
+    <label for="dob">Date of Birth:</label>
+    <input type="date" id="dob" />
+    <button onclick="generateInsights()">Reveal My Reading 🔮</button>
+    <button onclick="downloadPDF()">Download as PDF 📄</button>
+
+    <div class="result" id="output"></div>
+  </div>
+
+  <!-- jsPDF library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+    const angelNumbers = [
+      { number: 111, message: "New beginnings are on the way. Trust your path." },
+      { number: 222, message: "You are in the right place at the right time." },
+      { number: 333, message: "Your spiritual guides are surrounding you with love." },
+      { number: 444, message: "You are protected. Keep going, you're supported." },
+      { number: 555, message: "Big changes are ahead. Stay centered." },
+      { number: 777, message: "You're in alignment with divine wisdom." },
+      { number: 888, message: "Abundance and balance are flowing into your life." },
+      { number: 999, message: "A chapter is ending. Get ready to level up." }
+    ];
+
+    function sumDigits(n) {
+      return n.toString().split('').reduce((a, b) => a + parseInt(b), 0);
+    }
+
+    function reduceToOneDigit(n) {
+      while (n > 9 && ![11, 22, 33].includes(n)) {
+        n = sumDigits(n);
+      }
+      return n;
+    }
+
+    function getLifePathNumber(date) {
+      const [year, month, day] = date.split("-").map(Number);
+      const sum = sumDigits(year) + sumDigits(month) + sumDigits(day);
+      const reduced = reduceToOneDigit(sum);
+      return ([11, 22, 33].includes(sum)) ? sum : reduced;
+    }
+
+    function getSunSign(month, day) {
+      const signs = [
+        { sign: "Capricorn", end: 19 }, { sign: "Aquarius", end: 18 },
+        { sign: "Pisces", end: 20 }, { sign: "Aries", end: 19 },
+        { sign: "Taurus", end: 20 }, { sign: "Gemini", end: 20 },
+        { sign: "Cancer", end: 22 }, { sign: "Leo", end: 22 },
+        { sign: "Virgo", end: 22 }, { sign: "Libra", end: 22 },
+        { sign: "Scorpio", end: 21 }, { sign: "Sagittarius", end: 21 },
+        { sign: "Capricorn", end: 31 }
+      ];
+      return day <= signs[month - 1].end ? signs[month - 1].sign : signs[month].sign;
+    }
+
+    function getRandomAngelNumber() {
+      return angelNumbers[Math.floor(Math.random() * angelNumbers.length)];
+    }
+
+    function generateInsights() {
+      const dob = document.getElementById("dob").value;
+      if (!dob) return alert("Please select your date of birth.");
+
+      const lifePath = getLifePathNumber(dob);
+      const [year, month, day] = dob.split("-").map(Number);
+      const sunSign = getSunSign(month, day);
+      const angel = getRandomAngelNumber();
+
+      document.getElementById("output").innerHTML = `
+        <strong>🌟 Life Path Number:</strong> ${lifePath}<br>
+        Your Life Path Number symbolizes your core purpose and spiritual lessons.<br><br>
+
+        <strong>☀️ Sun Sign:</strong> ${sunSign}<br>
+        Your sun sign reflects your personality and identity.<br><br>
+
+        <strong>🔢 Today's Angel Number:</strong> ${angel.number}<br>
+        <em>${angel.message}</em>
+      `;
+    }
+
+    async function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const dob = document.getElementById("dob").value;
+      if (!dob) return alert("Please select your date of birth first.");
+
+      const lifePath = getLifePathNumber(dob);
+      const [year, month, day] = dob.split("-").map(Number);
+      const sunSign = getSunSign(month, day);
+      const angel = getRandomAngelNumber();
+
+      const doc = new jsPDF();
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(75, 0, 130);
+      doc.setFontSize(18);
+      doc.text("🌌 Spiritual Insights", 20, 20);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+
+      let y = 35;
+      doc.text(`Date of Birth: ${dob}`, 20, y);
+
+      y += 10;
+      doc.text(`🌟 Life Path Number: ${lifePath}`, 20, y);
+      doc.text("Your Life Path Number symbolizes your core purpose and spiritual lessons.", 20, y + 8);
+
+      y += 20;
+      doc.text(`☀️ Sun Sign: ${sunSign}`, 20, y);
+      doc.text("Your sun sign reflects your personality and identity.", 20, y + 8);
+
+      y += 20;
+      doc.text(`🔢 Today's Angel Number: ${angel.number}`, 20, y);
+      doc.text(angel.message, 20, y + 8);
+
+      doc.save("spiritual_insights.pdf");
+    }
+  </script>
+
+</body>
+</html>
