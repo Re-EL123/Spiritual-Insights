@@ -13,20 +13,17 @@
       color: #4a148c;
       padding: 20px;
     }
-
     h1, h2 {
       text-align: center;
     }
-
     .container {
-      max-width: 700px;
+      max-width: 600px;
       margin: 0 auto;
       background: white;
       border-radius: 20px;
       padding: 30px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
-
     input, button, select {
       width: 100%;
       padding: 12px;
@@ -35,7 +32,6 @@
       border: 1px solid #ccc;
       font-size: 16px;
     }
-
     button {
       background: #7b1fa2;
       color: white;
@@ -43,12 +39,10 @@
       cursor: pointer;
       transition: 0.3s ease;
     }
-
     button:hover {
       transform: scale(1.05);
       box-shadow: 0 6px 12px rgba(123, 31, 162, 0.3);
     }
-
     .result {
       margin-top: 20px;
       background: #f9f9f9;
@@ -57,7 +51,6 @@
       font-size: 16px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
-
     .result strong {
       display: block;
       font-size: 18px;
@@ -69,15 +62,16 @@
 
   <div class="container">
     <h1>Spiritual Insights</h1>
-    <p>Enter your birth details to receive a full spiritual reading including your Life Path Number, Sun Sign, Birth Chart insights, Angel Number and a Tarot reading.</p>
+    <p>Enter your details to receive your full spiritual reading.</p>
 
     <input type="date" id="dob" />
-    <input type="time" id="birthTime" />
-    <input type="text" id="birthCity" placeholder="City of Birth" />
+    <input type="time" id="tob" placeholder="Time of birth (optional)" />
+    <input type="text" id="place" placeholder="Place of birth (City/Country)" />
     <button onclick="generateInsights()">Reveal My Reading 🔮</button>
-    <button onclick="showPastReadings()">View My Past Readings 📜</button>
+    <button onclick="viewPastReadings()">View My Past Readings 📖</button>
 
     <div class="result" id="output"></div>
+    <button id="pdfBtn" style="display:none" onclick="downloadPDF()">📄 Download PDF</button>
   </div>
 
   <script>
@@ -92,16 +86,12 @@
       { number: 999, message: "A chapter is ending. Get ready to level up." }
     ];
 
-    const tarotCards = [
-      { card: "The Fool", meaning: "New beginnings, spontaneity, free spirit." },
-      { card: "The Magician", meaning: "Manifestation, resourcefulness, power." },
-      { card: "The High Priestess", meaning: "Intuition, mystery, inner voice." },
-      { card: "The Empress", meaning: "Femininity, beauty, nature, nurture." },
-      { card: "The Emperor", meaning: "Authority, structure, father-figure." },
-      { card: "The Lovers", meaning: "Love, harmony, values alignment." },
-      { card: "The Chariot", meaning: "Control, willpower, determination." },
-      { card: "Strength", meaning: "Courage, influence, compassion." },
-      { card: "The Hermit", meaning: "Soul-searching, introspection, inner guidance." }
+    const tarotDeck = [
+      "The Fool", "The Magician", "The High Priestess", "The Empress", "The Emperor",
+      "The Hierophant", "The Lovers", "The Chariot", "Strength", "The Hermit",
+      "Wheel of Fortune", "Justice", "The Hanged Man", "Death", "Temperance",
+      "The Devil", "The Tower", "The Star", "The Moon", "The Sun",
+      "Judgement", "The World"
     ];
 
     function sumDigits(n) {
@@ -138,75 +128,75 @@
       return angelNumbers[Math.floor(Math.random() * angelNumbers.length)];
     }
 
-    function drawTarotCards() {
-      const shuffled = tarotCards.sort(() => 0.5 - Math.random());
+    function getRandomTarotCards() {
+      const shuffled = tarotDeck.sort(() => 0.5 - Math.random());
       return shuffled.slice(0, 3);
-    }
-
-    function saveReadingLocally(data) {
-      let history = JSON.parse(localStorage.getItem("readings")) || [];
-      history.push(data);
-      localStorage.setItem("readings", JSON.stringify(history));
-    }
-
-    function showPastReadings() {
-      const readings = JSON.parse(localStorage.getItem("readings")) || [];
-      if (readings.length === 0) return alert("No past readings found.");
-      let html = `<h2>📜 Past Readings</h2>`;
-      readings.forEach((r, i) => {
-        html += `<div class='result'><strong>Reading #${i+1}</strong><br>${r.html}</div><br>`;
-      });
-      document.getElementById("output").innerHTML = html;
-    }
-
-    function downloadPDF(content) {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.text(content, 10, 10);
-      doc.save("Spiritual_Insight_Reading.pdf");
     }
 
     function generateInsights() {
       const dob = document.getElementById("dob").value;
-      const time = document.getElementById("birthTime").value;
-      const city = document.getElementById("birthCity").value;
-      if (!dob || !time || !city) return alert("Please complete all fields.");
+      const tob = document.getElementById("tob").value || "Unknown";
+      const place = document.getElementById("place").value || "Unknown";
+      if (!dob) return alert("Please select your date of birth.");
 
       const lifePath = getLifePathNumber(dob);
       const [year, month, day] = dob.split("-").map(Number);
       const sunSign = getSunSign(month, day);
       const angel = getRandomAngelNumber();
-      const tarot = drawTarotCards();
+      const tarot = getRandomTarotCards();
 
-      const html = `
-        <strong>🌟 Life Path Number:</strong> ${lifePath}<br>
-        Your Life Path Number symbolizes your core purpose and spiritual lessons.<br><br>
-
-        <strong>☀️ Sun Sign:</strong> ${sunSign}<br>
-        Your sun sign reflects your personality and identity.<br><br>
-
-        <strong>📍 Birth Info:</strong><br>
-        Time: ${time}<br>
-        City: ${city}<br><br>
-
-        <strong>🔮 Birth Chart (Basic):</strong><br>
-        Sun in ${sunSign}. (More detailed analysis coming soon!)<br><br>
-
-        <strong>🔢 Today's Angel Number:</strong> ${angel.number}<br>
-        <em>${angel.message}</em><br><br>
-
-        <strong>🃏 Tarot Reading (Past, Present, Future):</strong><br>
-        ${tarot.map(card => `<b>${card.card}</b>: ${card.meaning}`).join("<br>")}<br><br>
-
-        <button onclick="downloadPDF(this.parentElement.innerText)">Download PDF</button>
+      const reading = `
+        🌟 Life Path Number: ${lifePath}\n
+        ☀️ Sun Sign: ${sunSign}\n
+        📍 Birth Chart Info: Time - ${tob}, Place - ${place}\n
+        🔢 Angel Number: ${angel.number} - ${angel.message}\n
+        🃏 Tarot Cards Drawn:\n• ${tarot[0]}\n• ${tarot[1]}\n• ${tarot[2]}
       `;
 
-      document.getElementById("output").innerHTML = `<div class='result'>${html}</div>`;
-      saveReadingLocally({ html });
+      document.getElementById("output").innerHTML = `
+        <strong>🌟 Life Path Number:</strong> ${lifePath}<br>
+        Your Life Path Number symbolizes your core purpose and spiritual lessons.<br><br>
+        <strong>☀️ Sun Sign:</strong> ${sunSign}<br>
+        Your sun sign reflects your personality and identity.<br><br>
+        <strong>📍 Birth Chart Info:</strong><br>
+        Time: ${tob}<br>Place: ${place}<br><br>
+        <strong>🔢 Angel Number:</strong> ${angel.number}<br>
+        <em>${angel.message}</em><br><br>
+        <strong>🃏 Tarot Cards:</strong><br>
+        Past: ${tarot[0]}<br>
+        Present: ${tarot[1]}<br>
+        Future: ${tarot[2]}<br>
+      `;
+
+      document.getElementById("pdfBtn").style.display = 'block';
+
+      const history = JSON.parse(localStorage.getItem("readings") || "[]");
+      history.push({ dob, tob, place, lifePath, sunSign, angel, tarot, date: new Date().toLocaleString() });
+      localStorage.setItem("readings", JSON.stringify(history));
+    }
+
+    function viewPastReadings() {
+      const history = JSON.parse(localStorage.getItem("readings") || "[]");
+      if (history.length === 0) {
+        alert("No past readings found.");
+        return;
+      }
+
+      let message = "🔮 Your Past Readings:\n\n";
+      history.slice(-5).reverse().forEach((r, i) => {
+        message += `#${i + 1} - ${r.date}\nLife Path: ${r.lifePath}, Sun Sign: ${r.sunSign}, Angel: ${r.angel.number}\n\n`;
+      });
+
+      alert(message);
+    }
+
+    function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text(document.getElementById("output").innerText, 10, 10);
+      doc.save("spiritual-reading.pdf");
     }
   </script>
 
 </body>
 </html>
-
-
